@@ -10,8 +10,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
-
     private val m0nNavMenu = BottomNavigationView.OnNavigationItemSelectedListener { item ->
+
         when(item.itemId){
             R.id.jugar -> {
                 supportFragmentManager.commit{
@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
                 return@OnNavigationItemSelectedListener true
             }
         }
+
         false
     }
 
