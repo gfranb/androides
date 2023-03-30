@@ -1,10 +1,15 @@
 package com.example.roulette
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import com.example.roulette.databinding.FragmentGameBinding
+import java.util.Random
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -20,6 +25,8 @@ class GameFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    lateinit var binding: FragmentGameBinding
+    private var money: Int = 1000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,14 +34,65 @@ class GameFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
+    }
+
+    private fun changeNumber(binding: FragmentGameBinding) {
+
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_game, container, false)
+        binding = FragmentGameBinding.inflate(inflater,container,false)
+
+        binding.tvMoneyCount.text = money.toString() + "$"
+
+        binding.btnPlay.setOnClickListener() {
+
+            if(binding.etCoinsToPlay.text.toString().toInt() <= money && binding.etCoinsToPlay.text.toString().toInt() != 0){
+
+                money -=  binding.etCoinsToPlay.text.toString().toInt()
+                binding.tvMoneyCount.text = money.toString() + "$"
+
+                if(binding.btnRojo.isSelected()){
+                    Apuesta("Rojo",binding.etCoinsToPlay.text.toString().toInt())
+                }
+                if(binding.btnVerde.isSelected()){
+                    Apuesta("Verde",binding.etCoinsToPlay.text.toString().toInt())
+                }
+                if(binding.btnNegro.isSelected()){
+                    Apuesta("Negro",binding.etCoinsToPlay.text.toString().toInt())
+                }
+
+                    val randomNumber: Int = (0..10).random()
+
+                        binding.tvCardNumber.animate().apply {
+                            duration = 400
+                            rotationYBy(360f)
+                        }.start()
+
+                    binding.tvCardNumber.text = randomNumber.toString()
+
+                    if(randomNumber == 0){
+                        binding.tvCardNumber.setBackgroundResource(R.drawable.rounded_shape_green)
+                    }else{
+                        when(randomNumber%2){
+                            0 -> binding.tvCardNumber.setBackgroundResource(R.drawable.rounded_shape_red)
+                            else -> {
+                                binding.tvCardNumber.setBackgroundResource(R.drawable.rounded_shape_black)
+                            }
+                        }
+                    }
+
+            }else{
+                //Mensaje de error no se puede jugar
+            }
+
+        }
+        return binding.root
     }
 
     companion object {
