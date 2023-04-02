@@ -1,3 +1,5 @@
 package com.example.roulette
 
-data class Apuesta(val seleccion: String, val totalApostado: Int)
+data class Apuesta(val seleccion: String, val montoApostado: Int) {
+
+}
