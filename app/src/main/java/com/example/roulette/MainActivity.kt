@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.fragment.app.commit
 import androidx.fragment.app.replace
 import com.example.roulette.databinding.ActivityMainBinding
+import com.example.roulette.databinding.FragmentGameBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -12,6 +13,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
 
     private val m0nNavMenu = BottomNavigationView.OnNavigationItemSelectedListener { item ->
+
         when(item.itemId){
             R.id.jugar -> {
                 supportFragmentManager.commit{
@@ -30,13 +32,16 @@ class MainActivity : AppCompatActivity() {
                 return@OnNavigationItemSelectedListener true
             }
         }
+
         false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
+
         setContentView(binding.root)
 
         supportFragmentManager.commit{

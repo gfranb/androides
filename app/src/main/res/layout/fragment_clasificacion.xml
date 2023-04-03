@@ -7,18 +7,5 @@
     android:background="@color/white">
 
     <!-- TODO: Update blank fragment layout -->
-    <Button
-        android:id="@+id/sigin_google"
-        android:layout_width="300dp"
-        android:layout_height="70dp"
-        android:background="@drawable/google_login_button_style"
-        android:drawableStart="@drawable/img"
-        android:paddingLeft="30dp"
-        android:drawablePadding="-50dp"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:text="Sign in with google"
-        android:textAllCaps="false">
-    </Button>
 
 </FrameLayout>
