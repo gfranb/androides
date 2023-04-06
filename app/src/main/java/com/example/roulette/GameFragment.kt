@@ -127,6 +127,12 @@ class GameFragment : Fragment() {
             println(money)
         }
 
+        binding.btnReset.setOnClickListener(){
+
+
+
+
+        }
         binding.btnPlay.setOnClickListener() {
             println(apuestas)
             if (apuestas!!.isNotEmpty()) {

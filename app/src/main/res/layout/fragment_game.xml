@@ -147,13 +147,21 @@
             android:layout_width="match_parent"
             android:layout_height="30dp">
         </Space>
+
+        <Button
+            android:id="@+id/btn_reset"
+            android:layout_width="130dp"
+            android:layout_height="27dp"
+            android:background="@drawable/button_white"
+            android:text="reset apuestas"></Button>
+
         <Button
             android:id="@+id/btn_play"
             android:layout_width="200dp"
             android:layout_height="50dp"
-            android:text="Play"
-            android:background="@drawable/button_white">
-        </Button>
+            android:background="@drawable/button_white"
+            android:text="Play"></Button>
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="30dp">
