@@ -1,5 +1,14 @@
 package com.example.roulette
 
-data class Apuesta(val seleccion: String, val montoApostado: Int) {
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-}
+@Entity(tableName = "apuesta")
+data class Apuesta(
+
+    @PrimaryKey(autoGenerate = true)
+    var id: Long = 0,
+    var seleccion: String,
+    var montoApostado: Int,
+    var dinero: Int
+    )
