@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.example.roulette.databinding.FragmentGameBinding
@@ -60,9 +61,14 @@ class GameFragment : Fragment() {
         binding.btnRojo.setOnClickListener(){
 
            if(apuestas?.isEmpty() == true){
+               //binding.etCoinsToPlay.setError("seleciona uan apuesta para el rojo ")
                apuestas = ArrayList()
+
            }
-            if(money - binding.etCoinsToPlay.text.toString().toInt() >= 0){
+            if( binding.etCoinsToPlay.text.toString().toInt() <= 0) {
+                binding.etCoinsToPlay.setError("seleciona uan apuesta para el rojo ")
+            }
+            if(money - binding.etCoinsToPlay.text.toString().toInt() >= 1){
                 apuestas?.add(Apuesta("Rojo",binding.etCoinsToPlay.text.toString().toInt()))
                 money -= binding.etCoinsToPlay.text.toString().toInt()
                 importeApostadoRojo += binding.etCoinsToPlay.text.toString().toInt()
@@ -76,14 +82,21 @@ class GameFragment : Fragment() {
         binding.btnVerde.setOnClickListener(){
 
             if(apuestas?.isEmpty() == true){
+                //binding.etCoinsToPlay.setError("seleciona uan apuesta para el verde")
                 apuestas = ArrayList()
+
             }
-            if(money - binding.etCoinsToPlay.text.toString().toInt() >= 0){
+            if( binding.etCoinsToPlay.text.toString().toInt() <= 0) {
+                binding.etCoinsToPlay.setError("seleciona uan apuesta para el verde ")
+            }
+            if(money - binding.etCoinsToPlay.text.toString().toInt() >= 1){
                 apuestas?.add(Apuesta("Verde",binding.etCoinsToPlay.text.toString().toInt()))
                 importeApostadoVerde += binding.etCoinsToPlay.text.toString().toInt()
                 binding.apuestasVerde.text = importeApostadoVerde.toString() + "$"
                 money -= binding.etCoinsToPlay.text.toString().toInt()
             }else{
+
+
 
             }
             println(money)
@@ -92,14 +105,23 @@ class GameFragment : Fragment() {
         binding.btnNegro.setOnClickListener(){
 
             if(apuestas?.isEmpty() == true){
+
                 apuestas = ArrayList()
+
+
             }
-            if(money - binding.etCoinsToPlay.text.toString().toInt() >= 0){
+            if( binding.etCoinsToPlay.text.toString().toInt() <= 0) {
+                binding.etCoinsToPlay.setError("seleciona uan apuesta para el negro ")
+                }
+            if(money - binding.etCoinsToPlay.text.toString().toInt() >= 1){
                 apuestas?.add(Apuesta("Negro",binding.etCoinsToPlay.text.toString().toInt()))
                 money -= binding.etCoinsToPlay.text.toString().toInt()
                 importeApostadoNegro += binding.etCoinsToPlay.text.toString().toInt()
                 binding.apuestasNegro.text = importeApostadoNegro.toString() + "$"
             }else{
+
+
+
 
             }
             println(money)
@@ -107,24 +129,24 @@ class GameFragment : Fragment() {
 
         binding.btnPlay.setOnClickListener() {
             println(apuestas)
-            if(apuestas!!.isNotEmpty()){
+            if (apuestas!!.isNotEmpty()) {
 
                 binding.tvMoneyCount.text = money.toString() + "$"
 
                 val randomNumber: Int = (0..10).random()
 
-                    binding.tvCardNumber.animate().apply {
-                        duration = 400
-                        rotationYBy(360f)
-                    }.start()
+                binding.tvCardNumber.animate().apply {
+                    duration = 400
+                    rotationYBy(360f)
+                }.start()
 
                 binding.tvCardNumber.text = randomNumber.toString()
 
-                if(randomNumber == 0){
+                if (randomNumber == 0) {
                     binding.tvCardNumber.setBackgroundResource(R.drawable.rounded_shape_green)
                     esVerde = true
-                }else{
-                    when(randomNumber%2){
+                } else {
+                    when (randomNumber % 2) {
                         0 -> {
                             binding.tvCardNumber.setBackgroundResource(R.drawable.rounded_shape_red)
                             esRojo = true
@@ -136,10 +158,10 @@ class GameFragment : Fragment() {
                     }
                 }
 
-            }else{
-                //Mensajes de error no se puede jugar porque no se ha apostado
+            } else {
 
             }
+
 
             for(apuesta in apuestas!!){
                 //validar apuesta
