@@ -3,11 +3,13 @@ package com.example.roulette
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.roulette.databinding.ActivityStartScreenBinding
+import com.example.roulette.databinding.Activitylandpagebinding
 
-class StartScreen : AppCompatActivity() {
 
-    private lateinit var binding: ActivityStartScreenBinding
+class landpage : AppCompatActivity() {
+
+    private lateinit var binding: ActivitylandpageBinding
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,12 +20,12 @@ class StartScreen : AppCompatActivity() {
 
 
 
-        binding = ActivityStartScreenBinding.inflate(layoutInflater)
+        binding = ActivitylandpageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         binding.btnStart.setOnClickListener(){
             val context = binding.btnStart.context
-            val intent = Intent(context, MainActivity::class.java)
+            val intent = Intent(context, StartScreen::class.java)
             context.startActivity(intent)
         }
 
