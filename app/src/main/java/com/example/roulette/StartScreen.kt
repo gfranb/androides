@@ -15,9 +15,6 @@ class StartScreen : AppCompatActivity() {
 
         // Hago el binding y lo muestro e inflo la vista.
 
-
-
-
         binding = ActivityStartScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
