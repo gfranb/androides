@@ -3,12 +3,12 @@ package com.example.roulette
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.roulette.databinding.Activitylandpagebinding
+import com.example.roulette.databinding.ActivityLandpageBinding
 
 
 class landpage : AppCompatActivity() {
 
-    private lateinit var binding: ActivitylandpageBinding
+    private lateinit var binding: ActivityLandpageBinding
 
 
 
@@ -20,7 +20,7 @@ class landpage : AppCompatActivity() {
 
 
 
-        binding = ActivitylandpageBinding.inflate(layoutInflater)
+        binding = ActivityLandpageBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         binding.btnStart.setOnClickListener(){
