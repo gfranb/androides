@@ -9,10 +9,12 @@ class StartScreen : AppCompatActivity() {
 
     private lateinit var binding: ActivityStartScreenBinding
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         // Hago el binding y lo muestro e inflo la vista.
+
         binding = ActivityStartScreenBinding.inflate(layoutInflater)
         setContentView(binding.root)
 

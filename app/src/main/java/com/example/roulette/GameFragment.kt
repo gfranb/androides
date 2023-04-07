@@ -1,16 +1,17 @@
 package com.example.roulette
 
-import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
 import com.example.roulette.databinding.FragmentGameBinding
-import java.util.Random
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.properties.Delegates
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -27,7 +28,7 @@ class GameFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
     lateinit var binding: FragmentGameBinding
-    private var money: Int = 1000
+    var money: Int = 1
     private var apuestas: ArrayList<Apuesta>? = null
     private var esRojo: Boolean? = null
     private var esVerde: Boolean? = null
@@ -35,6 +36,8 @@ class GameFragment : Fragment() {
     var importeApostadoNegro: Int = 0
     var importeApostadoRojo: Int = 0
     var importeApostadoVerde: Int = 0
+    var idApuesta: Int = 0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,16 +45,30 @@ class GameFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
-
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         // Inflate the layout for this fragment
         binding = FragmentGameBinding.inflate(inflater,container,false)
-        binding.tvMoneyCount.text = money.toString() + "$"
+
+        val app = Room.databaseBuilder(requireActivity().applicationContext,ApuestaDB::class.java, "apuesta").fallbackToDestructiveMigration()
+            .build()
+
+        lifecycleScope.launch(Dispatchers.IO){
+            if(app.apuestaDao().getAll().isEmpty()){
+                app.apuestaDao().insert(Apuesta(0,"Reset",0,100))
+            }
+            money = app.apuestaDao().obtenerDineroDisponible()
+            println(money)
+
+            withContext(Dispatchers.Main){
+                binding.tvMoneyCount.text = money.toString() + "$"
+            }
+        }
 
         if(apuestas == null){
             apuestas = ArrayList()
@@ -62,15 +79,26 @@ class GameFragment : Fragment() {
            if(apuestas?.isEmpty() == true){
                apuestas = ArrayList()
            }
-            if(money - binding.etCoinsToPlay.text.toString().toInt() >= 0){
-                apuestas?.add(Apuesta("Rojo",binding.etCoinsToPlay.text.toString().toInt()))
+
+            if( binding.etCoinsToPlay.text.toString().toInt() <= 0 || binding.etCoinsToPlay.text.toString() == "") {
+
+                binding.etCoinsToPlay.setError("Inserte una apuesta para jugar")
+                binding.etCoinsToPlay.setBackgroundResource(R.drawable.edit_text_error_background)
+
+            }else if(money - binding.etCoinsToPlay.text.toString().toInt() >= 0){
+
+                idApuesta++
                 money -= binding.etCoinsToPlay.text.toString().toInt()
+                apuestas?.add(Apuesta(0,"Rojo",binding.etCoinsToPlay.text.toString().toInt(),money))
                 importeApostadoRojo += binding.etCoinsToPlay.text.toString().toInt()
                 binding.apuestasRojo.text = importeApostadoRojo.toString() + "$"
-            }else{
+                binding.etCoinsToPlay.setBackgroundResource(R.drawable.edit_text_background)
+                binding.etCoinsToPlay.setText("0")
 
             }
+
             println(money)
+
         }
 
         binding.btnVerde.setOnClickListener(){
@@ -78,13 +106,21 @@ class GameFragment : Fragment() {
             if(apuestas?.isEmpty() == true){
                 apuestas = ArrayList()
             }
-            if(money - binding.etCoinsToPlay.text.toString().toInt() >= 0){
-                apuestas?.add(Apuesta("Verde",binding.etCoinsToPlay.text.toString().toInt()))
+
+            if( binding.etCoinsToPlay.text.toString().toInt() <= 0 || binding.etCoinsToPlay.text.toString() == "") {
+
+                binding.etCoinsToPlay.setError("Inserte una apuesta para jugar")
+                binding.etCoinsToPlay.setBackgroundResource(R.drawable.edit_text_error_background)
+
+            }else if(money - binding.etCoinsToPlay.text.toString().toInt() >= 0){
+
+                idApuesta++
+                money -= binding.etCoinsToPlay.text.toString().toInt()
+                apuestas?.add(Apuesta(0,"Verde",binding.etCoinsToPlay.text.toString().toInt(),money))
                 importeApostadoVerde += binding.etCoinsToPlay.text.toString().toInt()
                 binding.apuestasVerde.text = importeApostadoVerde.toString() + "$"
-                money -= binding.etCoinsToPlay.text.toString().toInt()
-            }else{
-
+                binding.etCoinsToPlay.setBackgroundResource(R.drawable.edit_text_background)
+                binding.etCoinsToPlay.setText("0")
             }
             println(money)
         }
@@ -94,37 +130,67 @@ class GameFragment : Fragment() {
             if(apuestas?.isEmpty() == true){
                 apuestas = ArrayList()
             }
-            if(money - binding.etCoinsToPlay.text.toString().toInt() >= 0){
-                apuestas?.add(Apuesta("Negro",binding.etCoinsToPlay.text.toString().toInt()))
+
+            if( binding.etCoinsToPlay.text.toString().toInt() <= 0 || binding.etCoinsToPlay.text.toString() == "") {
+
+                binding.etCoinsToPlay.setError("Inserte una apuesta para jugar")
+                binding.etCoinsToPlay.setBackgroundResource(R.drawable.edit_text_error_background)
+
+                }else if (money - binding.etCoinsToPlay.text.toString().toInt() >= 0) {
+
+                idApuesta++
                 money -= binding.etCoinsToPlay.text.toString().toInt()
+                apuestas?.add(Apuesta(0,"Negro", binding.etCoinsToPlay.text.toString().toInt(),money))
                 importeApostadoNegro += binding.etCoinsToPlay.text.toString().toInt()
                 binding.apuestasNegro.text = importeApostadoNegro.toString() + "$"
-            }else{
+                binding.etCoinsToPlay.setBackgroundResource(R.drawable.edit_text_background)
+                binding.etCoinsToPlay.setText("0")
 
-            }
+                }
+
             println(money)
         }
 
+        binding.btnReset.setOnClickListener(){
+            if(!apuestas.isNullOrEmpty()){
+                val removerEstaApuesta = apuestas!!.get(apuestas!!.size-1)
+                money += removerEstaApuesta.montoApostado
+
+                if(removerEstaApuesta.seleccion == "Rojo"){
+                    importeApostadoRojo -= removerEstaApuesta.montoApostado
+                    binding.apuestasRojo.text = importeApostadoRojo.toString() + "$"
+                }
+                if(removerEstaApuesta.seleccion == "Negro"){
+                    importeApostadoNegro -= removerEstaApuesta.montoApostado
+                    binding.apuestasNegro.text = importeApostadoNegro.toString() + "$"
+                }
+                if(removerEstaApuesta.seleccion == "Verde"){
+                    importeApostadoVerde -= removerEstaApuesta.montoApostado
+                    binding.apuestasVerde.text = importeApostadoVerde.toString() + "$"
+                }
+                apuestas!!.removeLast()
+            }
+        }
+
         binding.btnPlay.setOnClickListener() {
-            println(apuestas)
-            if(apuestas!!.isNotEmpty()){
+            if (apuestas!!.isNotEmpty()) {
 
                 binding.tvMoneyCount.text = money.toString() + "$"
 
                 val randomNumber: Int = (0..10).random()
 
-                    binding.tvCardNumber.animate().apply {
-                        duration = 400
-                        rotationYBy(360f)
-                    }.start()
+                binding.tvCardNumber.animate().apply {
+                    duration = 400
+                    rotationYBy(360f)
+                }.start()
 
                 binding.tvCardNumber.text = randomNumber.toString()
 
-                if(randomNumber == 0){
+                if (randomNumber == 0) {
                     binding.tvCardNumber.setBackgroundResource(R.drawable.rounded_shape_green)
                     esVerde = true
-                }else{
-                    when(randomNumber%2){
+                } else {
+                    when (randomNumber % 2) {
                         0 -> {
                             binding.tvCardNumber.setBackgroundResource(R.drawable.rounded_shape_red)
                             esRojo = true
@@ -136,11 +202,7 @@ class GameFragment : Fragment() {
                     }
                 }
 
-            }else{
-                //Mensajes de error no se puede jugar porque no se ha apostado
-
             }
-
             for(apuesta in apuestas!!){
                 //validar apuesta
                 if(apuesta.seleccion == "Rojo" && esRojo == true ){
@@ -163,19 +225,38 @@ class GameFragment : Fragment() {
                         binding.tvMoneyCount.text = money.toString() + "$"
                     }
                 }
+                apuesta.dinero = money
+
+                lifecycleScope.launch(Dispatchers.IO){
+                    app.apuestaDao().insert(apuesta)
+                }
 
             }
 
-            // Guardar el historico de la apuesta realizada en SQLLite
-            // Importe del jugador
-
             apuestas!!.clear()
-            binding.apuestasVerde.text = ""
-            binding.apuestasNegro.text = ""
-            binding.apuestasRojo.text = ""
+            binding.apuestasVerde.text = "0$"
+            binding.apuestasNegro.text = "0$"
+            binding.apuestasRojo.text = "0$"
             importeApostadoNegro = 0
             importeApostadoRojo = 0
             importeApostadoVerde = 0
+            esRojo = false
+            esNegro = false
+            esVerde = false
+
+            if(binding.tvMoneyCount.text.toString() == "0$"){
+                binding.addMoreCoins.setVisibility(View.VISIBLE)
+            }
+
+        }
+
+        binding.addMoreCoins.setOnClickListener(){
+            lifecycleScope.launch(Dispatchers.IO){
+                app.apuestaDao().insert(Apuesta(0,"Reset",0,100))
+            }
+            money = 100
+            binding.tvMoneyCount.text = money.toString() + "$"
+            binding.addMoreCoins.setVisibility(View.INVISIBLE)
         }
 
         return binding.root
@@ -200,4 +281,5 @@ class GameFragment : Fragment() {
                 }
             }
     }
+
 }
