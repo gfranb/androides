@@ -193,4 +193,10 @@
             android:layout_height="30dp">
         </Space>
     </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btnSound"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@android:drawable/ic_media_play" />
 </FrameLayout>

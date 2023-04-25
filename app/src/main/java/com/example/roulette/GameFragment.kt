@@ -12,6 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.properties.Delegates
+import android.media.MediaPlayer
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -37,6 +39,9 @@ class GameFragment : Fragment() {
     var importeApostadoRojo: Int = 0
     var importeApostadoVerde: Int = 0
     var idApuesta: Int = 0
+
+    var mMediaPlayer: MediaPlayer? = null
+    private var playingMusic: Boolean = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -259,6 +264,25 @@ class GameFragment : Fragment() {
             binding.addMoreCoins.setVisibility(View.INVISIBLE)
         }
 
+        binding.btnSound.setOnClickListener(){
+                if(this.playingMusic==false) {
+                    if (mMediaPlayer == null) {
+                        mMediaPlayer = MediaPlayer.create(this.context, R.raw.song)
+                        mMediaPlayer!!.isLooping = true
+                        mMediaPlayer!!.setVolume(1F,1F)
+                        mMediaPlayer!!.start()
+                    } else {
+                        mMediaPlayer!!.start()
+                    }
+                    binding.btnSound.setImageResource(android.R.drawable.ic_media_pause)
+                    this.playingMusic=true;
+                }else{
+                    mMediaPlayer!!.pause();
+                    binding.btnSound.setImageResource(android.R.drawable.ic_media_play)
+                    this.playingMusic=false;
+                }
+        }
+
         return binding.root
     }
 
@@ -280,6 +304,16 @@ class GameFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+
+
+
+    override fun onStop() {
+        super.onStop()
+        if (mMediaPlayer != null) {
+            mMediaPlayer!!.release()
+            mMediaPlayer = null
+        }
     }
 
 }
