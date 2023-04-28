@@ -22,7 +22,7 @@ class Help : AppCompatActivity() {
         webView.webViewClient = WebViewClient()
 
         // this will load the url of the website
-        webView.loadUrl("file:///android_asset/help.html")
+        webView.loadUrl("file:///android_asset/help_es.html")
 
         // this will enable the javascript settings, it can also allow xss vulnerabilities
         webView.settings.javaScriptEnabled = true

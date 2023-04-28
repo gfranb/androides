@@ -23,6 +23,7 @@ class Landing : AppCompatActivity() {
             context.startActivity(intent)
         }
 
+        // Boton de ayuda
         binding.btnHelp.setOnClickListener(){
             val context = binding.btnHelp.context
             val intent = Intent(context, Help::class.java)

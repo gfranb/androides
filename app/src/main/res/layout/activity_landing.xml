@@ -34,13 +34,13 @@
 
     <TextView
         android:id="@+id/Text2"
-        android:layout_width="298dp"
+        android:layout_width="193dp"
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
         android:singleLine="false"
-        android:text=" y aumenta tu stock de fichas! "
+        android:text=" y aumenta tu bote! "
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:translationY="-40dp"
         android:visibility="visible" />

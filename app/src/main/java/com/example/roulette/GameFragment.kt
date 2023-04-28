@@ -1,6 +1,7 @@
 package com.example.roulette
 
 import android.app.Activity
+import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.content.Context.TELEPHONY_SERVICE
 import android.os.Bundle
@@ -28,7 +29,9 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.PackageManagerCompat
+import androidx.core.net.toUri
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -56,10 +59,45 @@ class GameFragment : Fragment() {
     var importeApostadoVerde: Int = 0
     var idApuesta: Int = 0
 
+    // Contiene el objeto reproductor multimedia
     var mMediaPlayer: MediaPlayer? = null
+    // Indica si está sonando la música
     private var playingMusic: Boolean = false
+    // Indica si la musica es la por defecto
+    private var defaultMusic=1
+    // Contiene la ruta de la musica seleccionada por el usuario
+    private var musicPath: Uri? = null
+
+    // Cotiene el objeto reproductor de animaciones sonoras
     private var soundPool: SoundPool? = null
+    // Indica el ID del sonido a reproducir
     private val soundId = 1
+
+    // Gestiona la selección de la musica de fondo por parte del usuario.
+    val getContent = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri!=null) {
+            val selectedFile = uri
+            this.musicPath=selectedFile
+            this.defaultMusic=0
+            if(mMediaPlayer !== null){
+                mMediaPlayer!!.stop()
+                mMediaPlayer!!.release()
+                mMediaPlayer=null
+                binding.btnSound.setImageResource(android.R.drawable.ic_media_play)
+                this.playingMusic=false;
+            }
+        }else {
+            this.defaultMusic=1
+            this.musicPath=null
+            if(mMediaPlayer !== null){
+                mMediaPlayer!!.stop()
+                mMediaPlayer!!.release()
+                mMediaPlayer=null
+                binding.btnSound.setImageResource(android.R.drawable.ic_media_play)
+                this.playingMusic=false;
+            }
+        }
+    }
 
 
 
@@ -69,10 +107,10 @@ class GameFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
+        // Inicializar el reproductor de animaciones sonoras
         soundPool = SoundPool(6, AudioManager.STREAM_MUSIC, 0)
         soundPool!!.load(this.context, R.raw.ficha, 1)
-        mMediaPlayer = MediaPlayer.create(this.context, R.raw.song)
-        mMediaPlayer!!.stop()
 
     }
 
@@ -289,22 +327,25 @@ class GameFragment : Fragment() {
         }
 
 
-
-        binding.btnSound.setOnLongClickListener() {
-            val intent = Intent()
-                .setType("*/*")
-                .setAction(Intent.ACTION_GET_CONTENT)
-
-            startActivityForResult(Intent.createChooser(intent, "Select a file"), 111)
+        // Funcionamiento del boton de musica de fondo en pulsacion larga.
+        binding.btnSound.setOnLongClickListener {
+            val mimeTypes = arrayOf("audio/*")
+            getContent.launch(mimeTypes)
             true
         }
 
+        // Funcionamiento del boton de musica en pulsacion corta.
         binding.btnSound.setOnClickListener(){
                 if(this.playingMusic==false) {
-                    if (mMediaPlayer == null) {
+                    if (mMediaPlayer == null && this.defaultMusic==1) {
                         mMediaPlayer = MediaPlayer.create(this.context, R.raw.song)
                         mMediaPlayer!!.isLooping = true
-                        mMediaPlayer!!.setVolume(1F,1F)
+                        mMediaPlayer!!.setVolume(1F, 1F)
+                        mMediaPlayer!!.start()
+                    }else if (mMediaPlayer == null && this.defaultMusic==0){
+                        mMediaPlayer = MediaPlayer.create(this.context,this.musicPath)
+                        mMediaPlayer!!.isLooping = true
+                        mMediaPlayer!!.setVolume(1F, 1F)
                         mMediaPlayer!!.start()
                     } else {
                         mMediaPlayer!!.isLooping = true
@@ -323,30 +364,7 @@ class GameFragment : Fragment() {
         return binding.root
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == 111 && resultCode == RESULT_OK) {
-            val selectedFile = data?.data // The URI with the location of the file
-            if (mMediaPlayer == null) {
-                mMediaPlayer = MediaPlayer.create(this.context, R.raw.song)
-                mMediaPlayer!!.setDataSource(selectedFile.toString())
-                mMediaPlayer!!.isLooping = true
-                mMediaPlayer!!.setVolume(1F, 1F)
-                mMediaPlayer!!.start()
-            }else{
-                if(playingMusic==true){
-                    mMediaPlayer!!.stop()
-                    mMediaPlayer!!.setDataSource(selectedFile.toString())
-                    mMediaPlayer!!.start()
-                }else{
-                    mMediaPlayer!!.stop()
-                    mMediaPlayer!!.setDataSource(selectedFile.toString())
-                    mMediaPlayer!!.start()
-                }
-            }
-        }
-    }
 
 
     companion object {
@@ -369,6 +387,7 @@ class GameFragment : Fragment() {
             }
     }
 
+    // Que hacer con la musica cuando la aplicación vuelve al foco.
     override fun onResume(){
         super.onResume()
         if(playingMusic){
@@ -376,6 +395,7 @@ class GameFragment : Fragment() {
         }
     }
 
+    // Que hacer con la musica cuando la aplicación deja el foco.
     override fun onPause(){
         super.onPause()
         if(playingMusic){
@@ -383,6 +403,7 @@ class GameFragment : Fragment() {
         }
     }
 
+    // Gestion de la musica cuando otra aplicación quiere el foco de audio.
     private val afChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
         when (focusChange) {
             AudioManager.AUDIOFOCUS_LOSS -> {
@@ -413,12 +434,13 @@ class GameFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Activar la gestion de la musica cuando entran llamadas.
         val mgr = activity?.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
     }
 
 
-
+    // Gestion de la musica cuando entran llamadas.
     val phoneStateListener: PhoneStateListener = object : PhoneStateListener() {
         override fun onCallStateChanged(state: Int, incomingNumber: String) {
             if (state == TelephonyManager.CALL_STATE_RINGING) {
@@ -436,24 +458,4 @@ class GameFragment : Fragment() {
             super.onCallStateChanged(state, incomingNumber)
         }
     }
-
-    fun getPath(context: Context, uri: Uri): String? {
-        if ("content".equals(uri.scheme, ignoreCase = true)) {
-            val projection = arrayOf("_data")
-            var cursor: Cursor? = null
-            try {
-                cursor = context.contentResolver.query(uri, projection, null, null, null)
-                val columnIndex = cursor!!.getColumnIndexOrThrow("_data")
-                if (cursor.moveToFirst()) {
-                    return cursor.getString(columnIndex)
-                }
-            } catch (e: java.lang.Exception) {
-
-            }
-        } else if ("file".equals(uri.scheme, ignoreCase = true)) {
-            return uri.path
-        }
-        return null
-    }
-
 }
