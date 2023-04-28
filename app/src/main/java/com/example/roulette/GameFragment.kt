@@ -1,5 +1,8 @@
 package com.example.roulette
 
+import android.app.Activity
+import android.app.Activity.RESULT_OK
+import android.content.Context.TELEPHONY_SERVICE
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,6 +16,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.properties.Delegates
 import android.media.MediaPlayer
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyManager
+import androidx.core.content.ContextCompat.getSystemService
+import android.content.Context
+import android.content.Intent
+import android.database.Cursor
+import android.media.AudioManager
+import android.media.SoundPool
+import android.net.Uri
+import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.PackageManagerCompat
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -42,6 +58,9 @@ class GameFragment : Fragment() {
 
     var mMediaPlayer: MediaPlayer? = null
     private var playingMusic: Boolean = false
+    private var soundPool: SoundPool? = null
+    private val soundId = 1
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +69,11 @@ class GameFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+        soundPool = SoundPool(6, AudioManager.STREAM_MUSIC, 0)
+        soundPool!!.load(this.context, R.raw.ficha, 1)
+        mMediaPlayer = MediaPlayer.create(this.context, R.raw.song)
+        mMediaPlayer!!.stop()
+
     }
 
     override fun onCreateView(
@@ -179,7 +203,7 @@ class GameFragment : Fragment() {
 
         binding.btnPlay.setOnClickListener() {
             if (apuestas!!.isNotEmpty()) {
-
+                soundPool?.play(soundId, 1F, 1F, 0, 0, 1F)
                 binding.tvMoneyCount.text = money.toString() + "$"
 
                 val randomNumber: Int = (0..10).random()
@@ -264,6 +288,17 @@ class GameFragment : Fragment() {
             binding.addMoreCoins.setVisibility(View.INVISIBLE)
         }
 
+
+
+        binding.btnSound.setOnLongClickListener() {
+            val intent = Intent()
+                .setType("*/*")
+                .setAction(Intent.ACTION_GET_CONTENT)
+
+            startActivityForResult(Intent.createChooser(intent, "Select a file"), 111)
+            true
+        }
+
         binding.btnSound.setOnClickListener(){
                 if(this.playingMusic==false) {
                     if (mMediaPlayer == null) {
@@ -272,6 +307,8 @@ class GameFragment : Fragment() {
                         mMediaPlayer!!.setVolume(1F,1F)
                         mMediaPlayer!!.start()
                     } else {
+                        mMediaPlayer!!.isLooping = true
+                        mMediaPlayer!!.setVolume(1F,1F)
                         mMediaPlayer!!.start()
                     }
                     binding.btnSound.setImageResource(android.R.drawable.ic_media_pause)
@@ -285,6 +322,32 @@ class GameFragment : Fragment() {
 
         return binding.root
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 111 && resultCode == RESULT_OK) {
+            val selectedFile = data?.data // The URI with the location of the file
+            if (mMediaPlayer == null) {
+                mMediaPlayer = MediaPlayer.create(this.context, R.raw.song)
+                mMediaPlayer!!.setDataSource(selectedFile.toString())
+                mMediaPlayer!!.isLooping = true
+                mMediaPlayer!!.setVolume(1F, 1F)
+                mMediaPlayer!!.start()
+            }else{
+                if(playingMusic==true){
+                    mMediaPlayer!!.stop()
+                    mMediaPlayer!!.setDataSource(selectedFile.toString())
+                    mMediaPlayer!!.start()
+                }else{
+                    mMediaPlayer!!.stop()
+                    mMediaPlayer!!.setDataSource(selectedFile.toString())
+                    mMediaPlayer!!.start()
+                }
+            }
+        }
+    }
+
 
     companion object {
         /**
@@ -306,14 +369,91 @@ class GameFragment : Fragment() {
             }
     }
 
-
-
-    override fun onStop() {
-        super.onStop()
-        if (mMediaPlayer != null) {
-            mMediaPlayer!!.release()
-            mMediaPlayer = null
+    override fun onResume(){
+        super.onResume()
+        if(playingMusic){
+            mMediaPlayer!!.start()
         }
+    }
+
+    override fun onPause(){
+        super.onPause()
+        if(playingMusic){
+            mMediaPlayer!!.pause()
+        }
+    }
+
+    private val afChangeListener = AudioManager.OnAudioFocusChangeListener { focusChange ->
+        when (focusChange) {
+            AudioManager.AUDIOFOCUS_LOSS -> {
+                if (playingMusic) {
+                    mMediaPlayer!!.pause()
+                }
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                if (playingMusic) {
+                    mMediaPlayer!!.pause()
+                }
+            }
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
+                if (playingMusic) {
+                    mMediaPlayer!!.setVolume(0.1F, 0.1F)
+                }
+
+            }
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                if (playingMusic) {
+                    mMediaPlayer!!.setVolume(1F, 1F)
+                    mMediaPlayer!!.start()
+                }
+            }
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val mgr = activity?.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
+    }
+
+
+
+    val phoneStateListener: PhoneStateListener = object : PhoneStateListener() {
+        override fun onCallStateChanged(state: Int, incomingNumber: String) {
+            if (state == TelephonyManager.CALL_STATE_RINGING) {
+                //Incoming call: Pause music
+                mMediaPlayer!!.pause()
+            } else if (state == TelephonyManager.CALL_STATE_IDLE) {
+                //Not in call: Play music
+                if(mMediaPlayer != null){
+                    mMediaPlayer!!.start()
+                }
+            } else if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                //A call is dialing, active or on hold
+                mMediaPlayer!!.pause()
+            }
+            super.onCallStateChanged(state, incomingNumber)
+        }
+    }
+
+    fun getPath(context: Context, uri: Uri): String? {
+        if ("content".equals(uri.scheme, ignoreCase = true)) {
+            val projection = arrayOf("_data")
+            var cursor: Cursor? = null
+            try {
+                cursor = context.contentResolver.query(uri, projection, null, null, null)
+                val columnIndex = cursor!!.getColumnIndexOrThrow("_data")
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(columnIndex)
+                }
+            } catch (e: java.lang.Exception) {
+
+            }
+        } else if ("file".equals(uri.scheme, ignoreCase = true)) {
+            return uri.path
+        }
+        return null
     }
 
 }
