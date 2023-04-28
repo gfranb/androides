@@ -5,9 +5,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.roulette.databinding.ActivityLandingBinding
 
+
 class Landing : AppCompatActivity() {
 
     lateinit var binding: ActivityLandingBinding
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -19,6 +21,13 @@ class Landing : AppCompatActivity() {
             val context = binding.btnNext.context
             val intent = Intent(context, StartScreen::class.java)
             context.startActivity(intent)
+        }
+
+        // Boton de ayuda
+        binding.btnHelp.setOnClickListener(){
+            val context = binding.btnHelp.context
+            val intent = Intent(context, Help::class.java)
+            startActivity(intent)
         }
     }
 }

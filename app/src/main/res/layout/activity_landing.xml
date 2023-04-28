@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,12 +10,13 @@
     android:orientation="vertical">
 
     <ImageView
+        android:id="@+id/logo"
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:layout_marginVertical="20dp"
         android:gravity="center"
         android:src="@drawable/roulette_logo"
-        android:translationY="-80dp"></ImageView>
+        android:translationY="-50dp"></ImageView>
 
     <TextView
         android:id="@+id/Text1"
@@ -32,13 +34,13 @@
 
     <TextView
         android:id="@+id/Text2"
-        android:layout_width="298dp"
+        android:layout_width="193dp"
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
         android:selectAllOnFocus="true"
         android:singleLine="false"
-        android:text=" y aumenta tu stock de fichas! "
+        android:text=" y aumenta tu bote! "
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:translationY="-40dp"
         android:visibility="visible" />
@@ -56,5 +58,13 @@
         android:textSize="14sp"
         android:textStyle="bold"
         android:translationY="60dp"></Button>
+
+    <Button
+        android:id="@+id/btn_help"
+        android:layout_width="60dp"
+        android:layout_height="50dp"
+        android:text="HELP"
+        android:translationX="150sp"
+        android:translationY="-550sp" />
 
 </LinearLayout>
