@@ -9,6 +9,4 @@ data class Apuesta(
     var seleccion: String,
     var montoApostado: Int,
     var dinero: Int,
-    var latitud: Double? = null,
-    var longitud: Double? = null,
 )
