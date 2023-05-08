@@ -1,7 +1,5 @@
 package com.example.roulette
 
-import android.Manifest.permission.ACCESS_COARSE_LOCATION
-import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.READ_CALENDAR
 import android.Manifest.permission.WRITE_CALENDAR
 import android.content.ContentValues
@@ -9,7 +7,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.location.Location
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.MediaScannerConnection
@@ -56,7 +53,6 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class GameFragment : Fragment() {
-   // private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private val PERMISSION_REQUEST_WRITE_CALENDAR = 1
     private val PERMISSION_REQUEST_READ_CALENDAR = 100
@@ -119,7 +115,6 @@ class GameFragment : Fragment() {
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -133,7 +128,7 @@ class GameFragment : Fragment() {
 
     }
 
-    private fun checkPermissions() {
+    /*private fun checkPermissions() {
         // Verifica si el usuario ha dado permiso para acceder a la ubicación
         if (ActivityCompat.checkSelfPermission(
                 requireContext(), ACCESS_FINE_LOCATION
@@ -147,7 +142,7 @@ class GameFragment : Fragment() {
             )
             return
         }
-    }
+    }*/
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -155,9 +150,8 @@ class GameFragment : Fragment() {
 
         // Inflate the layout for this fragment
         binding = FragmentGameBinding.inflate(inflater, container, false)
-        //fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
-        //checkPermissions()
-
+        /*fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        checkPermissions()*/
         val app = Room.databaseBuilder(
             requireActivity().applicationContext, ApuestaDB::class.java, "apuesta"
         ).fallbackToDestructiveMigration().build()
@@ -441,6 +435,30 @@ class GameFragment : Fragment() {
 
         return binding.root
     }
+
+    /*private fun insertLatLonUser(
+        apuesta: Apuesta, apuestaGanada: Boolean, callback: (Apuesta) -> Unit
+    ) {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(), ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(), ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            checkPermissions()
+        }
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            val latitud = if (apuestaGanada) location?.latitude else null
+            val longitud = if (apuestaGanada) location?.longitude else null
+            val apuestaConLatLon = apuesta.copy(
+                latitud = latitud,
+                longitud = longitud,
+            )
+            callback(apuestaConLatLon)
+        }
+    }*/
+
+
     companion object {
         /**
          * Use this factory method to create a new instance of
