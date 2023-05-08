@@ -1,5 +1,7 @@
 package com.example.roulette
 
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.Manifest.permission.READ_CALENDAR
 import android.Manifest.permission.WRITE_CALENDAR
 import android.content.ContentValues
@@ -7,6 +9,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.location.Location
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.MediaScannerConnection
@@ -19,6 +22,7 @@ import android.provider.CalendarContract
 import android.provider.MediaStore
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -53,6 +57,7 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class GameFragment : Fragment() {
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private val PERMISSION_REQUEST_WRITE_CALENDAR = 1
     private val PERMISSION_REQUEST_READ_CALENDAR = 100
@@ -115,6 +120,7 @@ class GameFragment : Fragment() {
         }
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -128,7 +134,7 @@ class GameFragment : Fragment() {
 
     }
 
-    /*private fun checkPermissions() {
+    private fun checkPermissions() {
         // Verifica si el usuario ha dado permiso para acceder a la ubicación
         if (ActivityCompat.checkSelfPermission(
                 requireContext(), ACCESS_FINE_LOCATION
@@ -142,7 +148,7 @@ class GameFragment : Fragment() {
             )
             return
         }
-    }*/
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -150,15 +156,15 @@ class GameFragment : Fragment() {
 
         // Inflate the layout for this fragment
         binding = FragmentGameBinding.inflate(inflater, container, false)
-        /*fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
-        checkPermissions()*/
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+        checkPermissions()
         val app = Room.databaseBuilder(
             requireActivity().applicationContext, ApuestaDB::class.java, "apuesta"
         ).fallbackToDestructiveMigration().build()
 
         lifecycleScope.launch(Dispatchers.IO) {
             if (app.apuestaDao().getAll().isEmpty()) {
-                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100))
+                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100, null , null))
             }
             money = app.apuestaDao().obtenerDineroDisponible()
             println(money)
@@ -191,7 +197,7 @@ class GameFragment : Fragment() {
                 money -= binding.etCoinsToPlay.text.toString().toInt()
                 apuestas?.add(
                     Apuesta(
-                        0, "Rojo", binding.etCoinsToPlay.text.toString().toInt(), money
+                        0, "Rojo", binding.etCoinsToPlay.text.toString().toInt(), money, null ,null
                     )
                 )
                 importeApostadoRojo += binding.etCoinsToPlay.text.toString().toInt()
@@ -224,7 +230,7 @@ class GameFragment : Fragment() {
                 money -= binding.etCoinsToPlay.text.toString().toInt()
                 apuestas?.add(
                     Apuesta(
-                        0, "Verde", binding.etCoinsToPlay.text.toString().toInt(), money
+                        0, "Verde", binding.etCoinsToPlay.text.toString().toInt(), money, null, null
                     )
                 )
                 importeApostadoVerde += binding.etCoinsToPlay.text.toString().toInt()
@@ -255,7 +261,7 @@ class GameFragment : Fragment() {
                 apuestas?.add(
                     Apuesta(
                         0, "Negro", binding.etCoinsToPlay.text.toString().toInt(), money
-                    )
+                    ,null ,null)
                 )
                 importeApostadoNegro += binding.etCoinsToPlay.text.toString().toInt()
                 binding.apuestasNegro.text = importeApostadoNegro.toString() + "$"
@@ -356,8 +362,10 @@ class GameFragment : Fragment() {
 
 
                 if (apuestaGanada) {
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        app.apuestaDao().insert(apuesta)
+                    insertLatLonUser(apuesta, true) { apuestaConLatLon ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            app.apuestaDao().insert(apuestaConLatLon)
+                        }
                     }
                 } else {
                     lifecycleScope.launch(Dispatchers.IO) {
@@ -391,7 +399,7 @@ class GameFragment : Fragment() {
 
         binding.addMoreCoins.setOnClickListener() {
             lifecycleScope.launch(Dispatchers.IO) {
-                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100))
+                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100, null, null))
             }
             money = 100
             binding.tvMoneyCount.text = money.toString() + "$"
@@ -436,7 +444,7 @@ class GameFragment : Fragment() {
         return binding.root
     }
 
-    /*private fun insertLatLonUser(
+    private fun insertLatLonUser(
         apuesta: Apuesta, apuestaGanada: Boolean, callback: (Apuesta) -> Unit
     ) {
         if (ActivityCompat.checkSelfPermission(
@@ -450,13 +458,16 @@ class GameFragment : Fragment() {
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             val latitud = if (apuestaGanada) location?.latitude else null
             val longitud = if (apuestaGanada) location?.longitude else null
+            Log.e("latitud",location?.latitude.toString())
+            Log.e("longitud",location?.longitude.toString())
+            Log.e("gane la apuesta?", apuestaGanada.toString())
             val apuestaConLatLon = apuesta.copy(
                 latitud = latitud,
-                longitud = longitud,
+                longitud = longitud
             )
             callback(apuestaConLatLon)
         }
-    }*/
+    }
 
 
     companion object {
@@ -529,10 +540,11 @@ class GameFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Activar la gestion de la musica cuando entran llamadas.
-        val mgr = activity?.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
-    }
+        //Esto peta y da error.
+        //val mgr = activity?.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        //mgr.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
 
+    }
 
     // Gestion de la musica cuando entran llamadas.
     val phoneStateListener: PhoneStateListener = object : PhoneStateListener() {
