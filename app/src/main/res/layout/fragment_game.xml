@@ -106,7 +106,7 @@
                     android:id="@+id/btn_rojo"
                     android:layout_width="80dp"
                     android:layout_height="40dp"
-                    android:text="Rojo"
+                    android:text="@string/red"
                     android:textColor="@color/white"
                     android:background="@drawable/button_red"
                     android:layout_margin="5dp"
@@ -130,7 +130,7 @@
                     android:id="@+id/btn_verde"
                     android:layout_width="80dp"
                     android:layout_height="40dp"
-                    android:text="Verde"
+                    android:text="@string/green"
                     android:textColor="@color/white"
                     android:background="@drawable/button_green"
                     android:layout_margin="5dp"
@@ -155,7 +155,7 @@
                     android:id="@+id/btn_negro"
                     android:layout_width="80dp"
                     android:layout_height="40dp"
-                    android:text="Negro"
+                    android:text="@string/black"
                     android:textColor="@color/white"
                     android:background="@drawable/button_black"
                     android:layout_margin="5dp"
@@ -183,12 +183,13 @@
             android:layout_width="match_parent"
             android:layout_height="30dp">
         </Space>
+
         <Button
             android:id="@+id/btn_play"
             android:layout_width="200dp"
             android:layout_height="50dp"
             android:background="@drawable/button_white"
-            android:text="Play"></Button>
+            android:text="@string/play" />
 
         <Space
             android:layout_width="match_parent"

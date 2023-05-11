@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Roulette</string>
+    <string name="play">Jugar</string>
+    <string name="standings">Clasificacion</string>
+    <string name="green">Verde</string>
+    <string name="red">Rojo</string>
+    <string name="black">Negro</string>
+    <string name="title">Elige un color, haz una apuesta y…</string>
+    <string name="title2">y aumenta tu bote! </string>
+    <string name="next">Siguiente</string>
+    <string name="help">Ayuda</string>
+    <string name="sign_in_google">Iniciar sesión con google</string>
+    <string name="victory_calendar">Victoria en juego Roulette</string>
+    <string name="victory_calendar_description">Evento generado automáticamente por la app Roulette</string>
+    <string name="win_black">¡Has ganado apostando al Negro!</string>
+    <string name="win_green">¡Has ganado apostando al Verde!</string>
+    <string name="win_red">¡Has ganado apostando al Rojo!</string>
+</resources>
