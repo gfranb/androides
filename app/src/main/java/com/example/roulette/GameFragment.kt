@@ -33,12 +33,19 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
+import com.example.roulette.Model.FirebaseApiService
+import com.example.roulette.Model.JugadorModel
 import com.example.roulette.databinding.FragmentGameBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -378,6 +385,9 @@ class GameFragment : Fragment() {
             if (apuestaGanada) {
                 addEventToCalendar()
                 saveScreenshot(takeScreenshot(requireView()), requireContext())
+                lifecycleScope.launch(Dispatchers.IO) {
+
+                }
             }
 
             apuestas!!.clear()

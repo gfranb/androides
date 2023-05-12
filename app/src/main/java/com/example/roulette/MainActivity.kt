@@ -1,5 +1,6 @@
 package com.example.roulette
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -9,7 +10,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
-
     private val m0nNavMenu = BottomNavigationView.OnNavigationItemSelectedListener { item ->
 
         when(item.itemId){
@@ -46,7 +46,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         //val db = Room.databaseBuilder(applicationContext,AppDatabase::class.java, "apuestas-roulete").build()
-
         var fragment: Fragment? = null
         fragment = GameFragment()
 
