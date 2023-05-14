@@ -178,7 +178,7 @@ class GameFragment : Fragment() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             if (app.apuestaDao().getAll().isEmpty()) {
-                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100, null , null))
+                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100, null , null, null))
             }
             money = app.apuestaDao().obtenerDineroDisponible()
             println(money)
@@ -211,7 +211,7 @@ class GameFragment : Fragment() {
                 money -= binding.etCoinsToPlay.text.toString().toInt()
                 apuestas?.add(
                     Apuesta(
-                        0, "Rojo", binding.etCoinsToPlay.text.toString().toInt(), money, null ,null
+                        0, "Rojo", binding.etCoinsToPlay.text.toString().toInt(), money, null ,null, null
                     )
                 )
                 importeApostadoRojo += binding.etCoinsToPlay.text.toString().toInt()
@@ -244,7 +244,7 @@ class GameFragment : Fragment() {
                 money -= binding.etCoinsToPlay.text.toString().toInt()
                 apuestas?.add(
                     Apuesta(
-                        0, "Verde", binding.etCoinsToPlay.text.toString().toInt(), money, null, null
+                        0, "Verde", binding.etCoinsToPlay.text.toString().toInt(), money, null, null , null
                     )
                 )
                 importeApostadoVerde += binding.etCoinsToPlay.text.toString().toInt()
@@ -275,7 +275,7 @@ class GameFragment : Fragment() {
                 apuestas?.add(
                     Apuesta(
                         0, "Negro", binding.etCoinsToPlay.text.toString().toInt(), money
-                    ,null ,null)
+                    ,null ,null, null)
                 )
                 importeApostadoNegro += binding.etCoinsToPlay.text.toString().toInt()
                 binding.apuestasNegro.text = importeApostadoNegro.toString() + "$"
@@ -349,7 +349,13 @@ class GameFragment : Fragment() {
                     if (binding.tvCardNumber.text.toString().toInt() % 2 == 0) {
                         println(apuesta.montoApostado * 2)
                         money += apuesta.montoApostado * 2
-                        binding.tvMoneyCount.text = money.toString() + "$"
+                        // Hacer funcion para obtener puntos de Firebase y actualizarlo en la interfaz al ganar
+                        var premio: Int? = 0
+                        lifecycleScope.launch(Dispatchers.IO){
+                            premio = obtenerPremio()
+                        }
+                        money += premio!!
+                        binding.tvMoneyCount.text = money.toString()  + "$"
                     }
                     apuestaGanada = true
                     Toast.makeText(context, getString(R.string.win_red), Toast.LENGTH_LONG).show()
@@ -357,6 +363,12 @@ class GameFragment : Fragment() {
                 if (apuesta.seleccion == "Verde" && esVerde == true) {
                     if (binding.tvCardNumber.text.toString().toInt() == 0) {
                         money += apuesta.montoApostado * 10
+                        // Hacer funcion para obtener puntos de Firebase y actualizarlo en la interfaz al ganar
+                        var premio: Int? = 0
+                        lifecycleScope.launch(Dispatchers.IO){
+                            premio = obtenerPremio()
+                        }
+                        money += premio!!
                         binding.tvMoneyCount.text = money.toString() + "$"
                     }
                     apuestaGanada = true
@@ -366,6 +378,12 @@ class GameFragment : Fragment() {
                     if (binding.tvCardNumber.text.toString().toInt() % 2 != 0) {
                         println(apuesta.montoApostado * 2)
                         money += apuesta.montoApostado * 2
+                        // Hacer funcion para obtener puntos de Firebase y actualizarlo en la interfaz al ganar
+                        var premio: Int? = 0
+                        lifecycleScope.launch(Dispatchers.IO){
+                            premio = obtenerPremio()
+                        }
+                        money += premio!!
                         binding.tvMoneyCount.text = money.toString() + "$"
                     }
                     apuestaGanada = true
@@ -378,6 +396,7 @@ class GameFragment : Fragment() {
                 if (apuestaGanada) {
                     insertLatLonUser(apuesta, true) { apuestaConLatLon ->
                         lifecycleScope.launch(Dispatchers.IO) {
+                            apuestaConLatLon.victoria = true
                             app.apuestaDao().insert(apuestaConLatLon)
 
                             database = FirebaseDatabase.getInstance().getReference("/")
@@ -390,8 +409,8 @@ class GameFragment : Fragment() {
                                 val premio = obtenerPremio()
                                 val dineroConPremioActual = premio?.plus(app.apuestaDao().obtenerDineroDisponible())
 
-                                app.apuestaDao().insert(Apuesta(0, "PREMIO", premio!!, dineroConPremioActual!!, null, null))
-                                val jugador = JugadorModel(email!!,app.apuestaDao().getAll(),app.apuestaDao().obtenerDineroDisponible())
+                                app.apuestaDao().insert(Apuesta(0, "PREMIO", premio!!, dineroConPremioActual!!, null, null, null))
+                                val jugador = JugadorModel(email!!,app.apuestaDao().obtenerApuestasGanadas(),app.apuestaDao().obtenerDineroDisponible())
                                 database.child("jugadores").child(id).setValue(jugador)
                                 //database.child("jugadores").child(id).child("email").child("apuestas").setValue(app.apuestaDao().getAll())//
                                 database.child("premio").setValue(0)
@@ -403,7 +422,8 @@ class GameFragment : Fragment() {
                     }
                 } else {
                     lifecycleScope.launch(Dispatchers.IO) {
-                        //app.apuestaDao().insert(apuesta)
+                        apuesta.victoria = false
+                        app.apuestaDao().insert(apuesta)
                         actualizarPremio(apuesta.montoApostado)
                     }
                 }
@@ -437,7 +457,7 @@ class GameFragment : Fragment() {
 
         binding.addMoreCoins.setOnClickListener() {
             lifecycleScope.launch(Dispatchers.IO) {
-                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100, null, null))
+                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100, null, null, null))
             }
             money = 100
             binding.tvMoneyCount.text = money.toString() + "$"

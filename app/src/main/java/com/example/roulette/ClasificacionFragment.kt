@@ -60,17 +60,18 @@ class ClasificacionFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentClasificacionBinding.inflate(inflater, container, false)
-
         val context = requireContext()
-
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
 
+        ordenarYmostrarJugadores()
+
         val googleSignInClient = GoogleSignIn.getClient(context, gso)
 
         if( binding.siginGoogle.visibility == View.VISIBLE ){
+
             // Volver a iniciar sesion y refrescar el layout
             binding.siginGoogle.setOnClickListener {
 
@@ -78,22 +79,15 @@ class ClasificacionFragment : Fragment() {
                     val signInIntent = googleSignInClient.signInIntent
                     startActivityForResult(signInIntent, RC_SIGN_IN)
                 }
+                ordenarYmostrarJugadores()
+                binding.signout.visibility = View.VISIBLE
+                binding.tabla.visibility = View.VISIBLE
+                binding.siginGoogle.visibility = View.INVISIBLE
 
-            }
-        }
-
-        if( FirebaseAuth.getInstance().currentUser != null){
-
-            lifecycleScope.launch(Dispatchers.IO){
-                obtenerTopJugadores()
-                Log.e("JUGADORES",listaUsuarios.toString())
-                //Log.e("JUGADORES",jugadores.toString())
-
-                // Nos importa de esta lista EMAIL Y PUNTOS
-                val listaOrdenada = listaUsuarios.sortedByDescending { it.puntos }
             }
 
         }
+
 
         return binding.root
 
@@ -134,13 +128,14 @@ class ClasificacionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         if(FirebaseAuth.getInstance().currentUser == null) {
             binding.signout.visibility = View.INVISIBLE
+            binding.tabla.visibility = View.INVISIBLE
             binding.siginGoogle.visibility = View.VISIBLE
         }else{
             binding.signout.visibility = View.VISIBLE
             binding.siginGoogle.visibility = View.INVISIBLE
+            binding.tabla.visibility = View.VISIBLE
         }
 
         if( binding.signout.visibility == View.VISIBLE){
@@ -148,6 +143,8 @@ class ClasificacionFragment : Fragment() {
                 FirebaseAuth.getInstance().signOut()
                 Toast.makeText(context, "Cierre de sesion exitoso", Toast.LENGTH_SHORT).show()
                 binding.siginGoogle.visibility = View.VISIBLE
+                binding.signout.visibility = View.INVISIBLE
+                binding.tabla.visibility = View.INVISIBLE
             }
         }
 
@@ -181,8 +178,6 @@ class ClasificacionFragment : Fragment() {
                     // Aquí puedes realizar las acciones correspondientes después de iniciar sesión
                     Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
                     // Mostrar tabla y boton logOut
-                    binding.signout.visibility = View.VISIBLE
-                    binding.siginGoogle.visibility = View.INVISIBLE
                 } else {
                     // Si el inicio de sesión con Google falla, muestra un mensaje de error
                     Toast.makeText(context, "Error al iniciar sesión con Google 2", Toast.LENGTH_SHORT).show()
@@ -191,6 +186,113 @@ class ClasificacionFragment : Fragment() {
 
     }
 
+    private fun ordenarYmostrarJugadores(){
+        if( FirebaseAuth.getInstance().currentUser != null){
+
+            lifecycleScope.launch(Dispatchers.IO){
+                obtenerTopJugadores()
+                Log.e("JUGADORES",listaUsuarios.toString())
+                //Log.e("JUGADORES",jugadores.toString())
+
+                // Nos importa de esta lista EMAIL Y PUNTOS
+                val listaOrdenada = listaUsuarios.sortedByDescending { it.puntos }
+
+
+                for (i in listaOrdenada.indices){
+
+                    when(i) {
+
+                        0 -> {
+
+                            if(listaOrdenada[i] != null){
+                                binding.posicion1.text = "1"
+                                binding.jugador1.text = listaOrdenada[i].correo
+                                binding.puntos1.text = listaOrdenada[i].puntos.toString()
+                            }
+
+                        }
+
+                        1 -> {
+                            if(listaOrdenada[i] != null) {
+                                binding.posicion2.text = "2"
+                                binding.jugador2.text = listaOrdenada[i].correo
+                                binding.puntos2.text = listaOrdenada[i].puntos.toString()
+                            }
+                        }
+
+                        2 -> {
+                            if(listaOrdenada[i] != null) {
+                                binding.posicion3.text = "3"
+                                binding.jugador3.text = listaOrdenada[i].correo
+                                binding.puntos3.text = listaOrdenada[i].puntos.toString()
+                            }
+                        }
+
+                        3 -> {
+                            if(listaOrdenada[i] != null) {
+                                binding.posicion4.text = "4"
+                                binding.jugador4.text = listaOrdenada[i].correo
+                                binding.puntos4.text = listaOrdenada[i].puntos.toString()
+                            }
+                        }
+
+                        4 -> {
+                            if(listaOrdenada[i] != null) {
+                                binding.posicion5.text = "5"
+                                binding.jugador5.text = listaOrdenada[i].correo
+                                binding.puntos5.text = listaOrdenada[i].puntos.toString()
+                            }
+                        }
+
+                        5 -> {
+                            if(listaOrdenada[i] != null) {
+                                binding.posicion6.text = "6"
+                                binding.jugador6.text = listaOrdenada[i].correo
+                                binding.puntos6.text = listaOrdenada[i].puntos.toString()
+                            }
+                        }
+
+                        6 -> {
+                            if(listaOrdenada[i] != null) {
+                                binding.posicion7.text = "7"
+                                binding.jugador7.text = listaOrdenada[i].correo
+                                binding.puntos7.text = listaOrdenada[i].puntos.toString()
+                            }
+                        }
+
+                        7 -> {
+                            if(listaOrdenada[i] != null) {
+                                binding.posicion8.text = "9"
+                                binding.jugador8.text = listaOrdenada[i].correo
+                                binding.puntos8.text = listaOrdenada[i].puntos.toString()
+                            }
+                        }
+
+                        8 -> {
+                            if(listaOrdenada[i] != null) {
+                                binding.posicion9.text = "9"
+                                binding.jugador9.text = listaOrdenada[i].correo
+                                binding.puntos9.text = listaOrdenada[i].puntos.toString()
+                            }
+                        }
+
+                        9 -> {
+                            if(listaOrdenada[i] != null) {
+                                binding.posicion10.text = "10"
+                                binding.jugador10.text = listaOrdenada[i].correo
+                                binding.puntos10.text = listaOrdenada[i].puntos.toString()
+                            }
+                        }
+
+                        else -> {
+                            break
+                        }
+                    }
+
+                }
+            }
+        }
+    }
     companion object {
         /**
          * Use this factory method to create a new instance of
