@@ -23,94 +23,21 @@
         android:text="Sign in with google"
         android:textAllCaps="false">
     </Button>
-    <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/tabla_clasificacion"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+
+    <!-- AQUI HAY QUE PONER LA TABLA -->
+
+    <Button
+        android:id="@+id/signout"
+        android:layout_width="100dp"
+        android:layout_height="40dp"
+        android:background="@drawable/button_logout"
+        android:textColor="@color/white"
+        android:drawablePadding="-50dp"
+        android:gravity="center"
         android:layout_gravity="center"
-        android:paddingTop="20dp"
-        android:gravity="center">
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:id="@+id/tabla_titulos"
-            >
-            <TextView
-                android:text="Posicion"
-                android:textColor="@color/white"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:paddingHorizontal="40dp"
-                />
-            <TextView
-                android:text="Jugador"
-                android:textColor="@color/white"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:paddingHorizontal="40dp"
-                />
-            <TextView
-                android:text="Puntos"
-                android:textColor="@color/white"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:paddingHorizontal="40dp"
-                />
-        </TableRow>
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:id="@+id/columna_jugador"
-            >
-            <TextView
-                android:id="@+id/posicion_jugador"
-                android:text="posicion_jugador"
-                android:textColor="@color/white"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:paddingHorizontal="10dp"
-                />
-            <TextView
-                android:id="@+id/nombre_jugador"
-                android:text="nombre_jugador"
-                android:textColor="@color/white"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:paddingHorizontal="10dp"
-                />
-            <TextView
-                android:id="@+id/puntos_jugador"
-                android:text="puntos_jugador"
-                android:textColor="@color/white"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:paddingHorizontal="10dp"
-                />
-        </TableRow>
-        <TableRow
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:paddingVertical="20dp"
-            android:layout_height="wrap_content">
-            <Button
-                android:id="@+id/signout"
-                android:layout_width="100dp"
-                android:layout_height="40dp"
-                android:background="@drawable/button_logout"
-                android:textColor="@color/white"
-                android:drawablePadding="-50dp"
-                android:gravity="center"
-                android:layout_gravity="center"
-                android:text="Sign Out"
-                android:textAllCaps="false"
-                >
-            </Button>
-        </TableRow>
-
-    </TableLayout>
-
-
+        android:text="Sign Out"
+        android:textAllCaps="false"
+        >
+    </Button>
 
 </LinearLayout>

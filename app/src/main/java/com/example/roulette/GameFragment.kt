@@ -39,11 +39,17 @@ import com.example.roulette.databinding.FragmentGameBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
@@ -69,6 +75,7 @@ class GameFragment : Fragment() {
     private val PERMISSION_REQUEST_WRITE_CALENDAR = 1
     private val PERMISSION_REQUEST_READ_CALENDAR = 100
 
+    private lateinit var database: DatabaseReference
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -372,11 +379,32 @@ class GameFragment : Fragment() {
                     insertLatLonUser(apuesta, true) { apuestaConLatLon ->
                         lifecycleScope.launch(Dispatchers.IO) {
                             app.apuestaDao().insert(apuestaConLatLon)
+
+                            database = FirebaseDatabase.getInstance().getReference("/")
+
+                            val instanciaFirebase = FirebaseAuth.getInstance()
+                            if(instanciaFirebase.currentUser != null){
+
+                                val email = instanciaFirebase.currentUser!!.email
+                                val id = instanciaFirebase.currentUser!!.uid
+                                val premio = obtenerPremio()
+                                val dineroConPremioActual = premio?.plus(app.apuestaDao().obtenerDineroDisponible())
+
+                                app.apuestaDao().insert(Apuesta(0, "PREMIO", premio!!, dineroConPremioActual!!, null, null))
+                                val jugador = JugadorModel(email!!,app.apuestaDao().getAll(),app.apuestaDao().obtenerDineroDisponible())
+                                database.child("jugadores").child(id).setValue(jugador)
+                                //database.child("jugadores").child(id).child("email").child("apuestas").setValue(app.apuestaDao().getAll())//
+                                database.child("premio").setValue(0)
+                               // database.child("usuarios").child("$email").setValue(apuestaGanada)
+
+                            }
+
                         }
                     }
                 } else {
                     lifecycleScope.launch(Dispatchers.IO) {
-                        app.apuestaDao().insert(apuesta)
+                        //app.apuestaDao().insert(apuesta)
+                        actualizarPremio(apuesta.montoApostado)
                     }
                 }
 
@@ -416,7 +444,6 @@ class GameFragment : Fragment() {
             binding.addMoreCoins.setVisibility(View.INVISIBLE)
         }
 
-
         // Funcionamiento del boton de musica de fondo en pulsacion larga.
         binding.btnSound.setOnLongClickListener {
             val mimeTypes = arrayOf("audio/*")
@@ -454,6 +481,58 @@ class GameFragment : Fragment() {
         return binding.root
     }
 
+    private suspend fun obtenerPremio(): Int? {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://androides-94b4a-default-rtdb.europe-west1.firebasedatabase.app/") // Reemplaza "tu_firebase_project_url" con la URL de tu proyecto Firebase
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service = retrofit.create(FirebaseApiService::class.java)
+
+        val response = service.getPremio()
+
+        if (response.isSuccessful) {
+            val valor = response.body()
+            Log.e("ESTE ES MI PREMIO" , valor.toString())
+            return valor
+        } else {
+            // La solicitud no fue exitosa, maneja el error aquí
+            Log.e("ESTE ES MI PREMIO" , "error")
+        }
+        return 0
+    }
+
+    private suspend fun actualizarPremio(montoApostado: Int) {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://androides-94b4a-default-rtdb.europe-west1.firebasedatabase.app/") // Reemplaza "tu_firebase_project_url" con la URL de tu proyecto Firebase
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service = retrofit.create(FirebaseApiService::class.java)
+
+        val response = service.getPremio()
+
+        if (response.isSuccessful) {
+            var valor = response.body()
+            valor = valor?.plus(montoApostado)
+
+            database = FirebaseDatabase.getInstance().getReference("/")
+
+            val instanciaFirebase = FirebaseAuth.getInstance()
+            if(instanciaFirebase.currentUser != null){
+
+                database.child("premio").setValue(valor)
+
+            }
+
+            Log.e("ESTE ES MI PREMIO" , valor.toString())
+        } else {
+            // La solicitud no fue exitosa, maneja el error aquí
+            Log.e("ESTE ES MI PREMIO" , "error")
+        }
+
+    }
+
     private fun insertLatLonUser(
         apuesta: Apuesta, apuestaGanada: Boolean, callback: (Apuesta) -> Unit
     ) {
@@ -478,7 +557,6 @@ class GameFragment : Fragment() {
             callback(apuestaConLatLon)
         }
     }
-
 
     companion object {
         /**

@@ -2,23 +2,25 @@ package com.example.roulette
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.example.roulette.Model.FirebaseApiService
-import com.example.roulette.Model.JugadorModel
+import com.example.roulette.Model.User
 import com.example.roulette.databinding.FragmentClasificacionBinding
-import com.example.roulette.databinding.FragmentGameBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.database.DatabaseReference
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
@@ -41,6 +43,8 @@ class ClasificacionFragment : Fragment() {
     lateinit var binding: FragmentClasificacionBinding
     private lateinit var firebaseAuth: FirebaseAuth
     private val RC_SIGN_IN = 9001
+    private lateinit var database: DatabaseReference
+    private val listaUsuarios: MutableList<User> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,8 +82,54 @@ class ClasificacionFragment : Fragment() {
             }
         }
 
+        if( FirebaseAuth.getInstance().currentUser != null){
+
+            lifecycleScope.launch(Dispatchers.IO){
+                obtenerTopJugadores()
+                Log.e("JUGADORES",listaUsuarios.toString())
+                //Log.e("JUGADORES",jugadores.toString())
+                
+                // Nos importa de esta lista EMAIL Y PUNTOS
+                val listaOrdenada = listaUsuarios.sortedByDescending { it.puntos }
+            }
+
+        }
+
         return binding.root
 
+    }
+
+    private suspend fun obtenerTopJugadores() {
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://androides-94b4a-default-rtdb.europe-west1.firebasedatabase.app/") // Reemplaza "tu_firebase_project_url" con la URL de tu proyecto Firebase
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service = retrofit.create(FirebaseApiService::class.java)
+
+        val response = service.getJugadores()
+
+        if (response.isSuccessful) {
+            val gson = Gson()
+            val responseBody = response.body()
+
+            responseBody?.forEach {(userId,jugador) ->
+
+                val email = jugador.correo
+                val apuestas = jugador.apuestasGanadas
+                val puntos = jugador.puntos
+
+                val nuevoJugador = User(apuestas,email,puntos)
+
+                listaUsuarios.add(nuevoJugador)
+
+            }
+
+        } else {
+            // Manejar el error de la respuesta no exitosa
+            throw Exception("Error al obtener los datos de Firebase: ${response.code()}")
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -88,11 +138,9 @@ class ClasificacionFragment : Fragment() {
 
         if(FirebaseAuth.getInstance().currentUser == null) {
             binding.signout.visibility = View.INVISIBLE
-            binding.tablaClasificacion.visibility = View.INVISIBLE
             binding.siginGoogle.visibility = View.VISIBLE
         }else{
             binding.signout.visibility = View.VISIBLE
-            binding.tablaClasificacion.visibility = View.VISIBLE
             binding.siginGoogle.visibility = View.INVISIBLE
         }
 
@@ -100,7 +148,6 @@ class ClasificacionFragment : Fragment() {
             binding.signout.setOnClickListener{
                 FirebaseAuth.getInstance().signOut()
                 Toast.makeText(context, "Cierre de sesion exitoso", Toast.LENGTH_SHORT).show()
-                binding.tablaClasificacion.visibility = View.INVISIBLE
                 binding.siginGoogle.visibility = View.VISIBLE
             }
         }
@@ -136,7 +183,6 @@ class ClasificacionFragment : Fragment() {
                     Toast.makeText(context, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
                     // Mostrar tabla y boton logOut
                     binding.signout.visibility = View.VISIBLE
-                    binding.tablaClasificacion.visibility = View.VISIBLE
                     binding.siginGoogle.visibility = View.INVISIBLE
                 } else {
                     // Si el inicio de sesión con Google falla, muestra un mensaje de error
@@ -165,4 +211,7 @@ class ClasificacionFragment : Fragment() {
                 }
             }
     }
+
 }
+
+
