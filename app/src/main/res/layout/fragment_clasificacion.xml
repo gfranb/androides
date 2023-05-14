@@ -10,34 +10,161 @@
     android:orientation="vertical">
 
     <!-- TODO: Update blank fragment layout -->
-    <Button
-        android:id="@+id/sigin_google"
-        android:layout_width="350dp"
-        android:layout_height="70dp"
-        android:background="@drawable/google_login_button_style"
-        android:drawableStart="@drawable/img"
-        android:paddingLeft="30dp"
-        android:drawablePadding="-50dp"
-        android:gravity="center"
-        android:layout_gravity="center"
-        android:text="Sign in with google"
-        android:textAllCaps="false">
-    </Button>
 
     <!-- AQUI HAY QUE PONER LA TABLA -->
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="316dp"
+        android:stretchColumns="1">
+
+        <TableRow>
+
+            <TextView
+                android:layout_width="210dp"
+                android:padding="3dip"
+                android:text="correo" />
+
+            <TextView
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="puntos" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:padding="3dip"
+                android:text="" />
+
+            <TextView
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:padding="3dip"
+                android:text="" />
+
+            <TextView
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:padding="3dip"
+                android:text="" />
+
+            <TextView
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:padding="3dip"
+                android:text="" />
+
+            <TextView
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:padding="3dip"
+                android:text="" />
+
+            <TextView
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:padding="3dip"
+                android:text="" />
+
+            <TextView
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:padding="3dip"
+                android:text="" />
+
+            <TextView
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:padding="3dip"
+                android:text="" />
+
+            <TextView
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:padding="3dip"
+                android:text="" />
+
+            <TextView
+                android:gravity="right"
+                android:padding="3dip"
+                android:text="" />
+        </TableRow>
+
+    </TableLayout>
+
+    <Button
+        android:id="@+id/sigin_google"
+        android:layout_width="297dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/google_login_button_style"
+        android:drawableStart="@drawable/img"
+        android:drawablePadding="-50dp"
+        android:gravity="center"
+        android:paddingLeft="30dp"
+        android:text="Sign in with google"
+        android:textAllCaps="false"></Button>
 
     <Button
         android:id="@+id/signout"
         android:layout_width="100dp"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
         android:background="@drawable/button_logout"
-        android:textColor="@color/white"
         android:drawablePadding="-50dp"
         android:gravity="center"
-        android:layout_gravity="center"
         android:text="Sign Out"
         android:textAllCaps="false"
-        >
-    </Button>
+        android:textColor="@color/white"></Button>
 
 </LinearLayout>
