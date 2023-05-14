@@ -88,7 +88,7 @@ class ClasificacionFragment : Fragment() {
                 obtenerTopJugadores()
                 Log.e("JUGADORES",listaUsuarios.toString())
                 //Log.e("JUGADORES",jugadores.toString())
-                
+
                 // Nos importa de esta lista EMAIL Y PUNTOS
                 val listaOrdenada = listaUsuarios.sortedByDescending { it.puntos }
             }
@@ -111,7 +111,6 @@ class ClasificacionFragment : Fragment() {
         val response = service.getJugadores()
 
         if (response.isSuccessful) {
-            val gson = Gson()
             val responseBody = response.body()
 
             responseBody?.forEach {(userId,jugador) ->
