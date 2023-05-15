@@ -79,10 +79,10 @@ class ClasificacionFragment : Fragment() {
                     val signInIntent = googleSignInClient.signInIntent
                     startActivityForResult(signInIntent, RC_SIGN_IN)
                 }
-                ordenarYmostrarJugadores()
                 binding.signout.visibility = View.VISIBLE
                 binding.tabla.visibility = View.VISIBLE
                 binding.siginGoogle.visibility = View.INVISIBLE
+                ordenarYmostrarJugadores()
 
             }
 

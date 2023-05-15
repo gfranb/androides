@@ -350,12 +350,16 @@ class GameFragment : Fragment() {
                         println(apuesta.montoApostado * 2)
                         money += apuesta.montoApostado * 2
                         // Hacer funcion para obtener puntos de Firebase y actualizarlo en la interfaz al ganar
-                        var premio: Int? = 0
+
                         lifecycleScope.launch(Dispatchers.IO){
-                            premio = obtenerPremio()
+                            val premio = obtenerPremio()
+                            withContext(Dispatchers.Main){
+                                money += premio!!
+                                binding.tvMoneyCount.text = money.toString()  + "$"
+                            }
+
                         }
-                        money += premio!!
-                        binding.tvMoneyCount.text = money.toString()  + "$"
+
                     }
                     apuestaGanada = true
                     Toast.makeText(context, getString(R.string.win_red), Toast.LENGTH_LONG).show()
@@ -364,12 +368,13 @@ class GameFragment : Fragment() {
                     if (binding.tvCardNumber.text.toString().toInt() == 0) {
                         money += apuesta.montoApostado * 10
                         // Hacer funcion para obtener puntos de Firebase y actualizarlo en la interfaz al ganar
-                        var premio: Int? = 0
                         lifecycleScope.launch(Dispatchers.IO){
-                            premio = obtenerPremio()
+                            val premio = obtenerPremio()
+                            withContext(Dispatchers.Main){
+                                money += premio!!
+                                binding.tvMoneyCount.text = money.toString()  + "$"
+                            }
                         }
-                        money += premio!!
-                        binding.tvMoneyCount.text = money.toString() + "$"
                     }
                     apuestaGanada = true
                     Toast.makeText(context, getString(R.string.win_green), Toast.LENGTH_LONG).show()
@@ -379,12 +384,13 @@ class GameFragment : Fragment() {
                         println(apuesta.montoApostado * 2)
                         money += apuesta.montoApostado * 2
                         // Hacer funcion para obtener puntos de Firebase y actualizarlo en la interfaz al ganar
-                        var premio: Int? = 0
                         lifecycleScope.launch(Dispatchers.IO){
-                            premio = obtenerPremio()
+                            val premio = obtenerPremio()
+                            withContext(Dispatchers.Main){
+                                money += premio!!
+                                binding.tvMoneyCount.text = money.toString()  + "$"
+                            }
                         }
-                        money += premio!!
-                        binding.tvMoneyCount.text = money.toString() + "$"
                     }
                     apuestaGanada = true
                     Toast.makeText(context, getString(R.string.win_black), Toast.LENGTH_LONG).show()

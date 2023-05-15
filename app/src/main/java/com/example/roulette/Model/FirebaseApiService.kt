@@ -16,4 +16,7 @@ interface FirebaseApiService {
     @GET("premio.json")
     suspend fun getPremio(): Response<Int>
 
+    @GET("jugadores/{id}.json")
+    suspend fun getPuntosId(): Response<User>
+
 }
