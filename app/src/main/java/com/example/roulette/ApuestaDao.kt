@@ -15,4 +15,7 @@ interface ApuestaDao {
 
     @Query("SELECT dinero FROM apuesta ORDER BY id DESC LIMIT 1")
     fun obtenerDineroDisponible():Int
+
+    @Query("SELECT * FROM apuesta WHERE victoria = 1")
+    fun obtenerApuestasGanadas():List<Apuesta>
 }

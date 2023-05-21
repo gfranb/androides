@@ -10,5 +10,6 @@ data class Apuesta(
         var montoApostado: Int,
         var dinero: Int,
         var latitud: Double?,
-        var longitud: Double?
+        var longitud: Double?,
+        var victoria: Boolean?
 )

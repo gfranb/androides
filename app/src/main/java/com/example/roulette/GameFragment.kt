@@ -33,12 +33,25 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
+import com.example.roulette.Model.FirebaseApiService
+import com.example.roulette.Model.JugadorModel
 import com.example.roulette.databinding.FragmentGameBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -62,6 +75,7 @@ class GameFragment : Fragment() {
     private val PERMISSION_REQUEST_WRITE_CALENDAR = 1
     private val PERMISSION_REQUEST_READ_CALENDAR = 100
 
+    private lateinit var database: DatabaseReference
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -164,7 +178,7 @@ class GameFragment : Fragment() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             if (app.apuestaDao().getAll().isEmpty()) {
-                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100, null , null))
+                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100, null , null, null))
             }
             money = app.apuestaDao().obtenerDineroDisponible()
             println(money)
@@ -197,7 +211,7 @@ class GameFragment : Fragment() {
                 money -= binding.etCoinsToPlay.text.toString().toInt()
                 apuestas?.add(
                     Apuesta(
-                        0, "Rojo", binding.etCoinsToPlay.text.toString().toInt(), money, null ,null
+                        0, "Rojo", binding.etCoinsToPlay.text.toString().toInt(), money, null ,null, null
                     )
                 )
                 importeApostadoRojo += binding.etCoinsToPlay.text.toString().toInt()
@@ -230,7 +244,7 @@ class GameFragment : Fragment() {
                 money -= binding.etCoinsToPlay.text.toString().toInt()
                 apuestas?.add(
                     Apuesta(
-                        0, "Verde", binding.etCoinsToPlay.text.toString().toInt(), money, null, null
+                        0, "Verde", binding.etCoinsToPlay.text.toString().toInt(), money, null, null , null
                     )
                 )
                 importeApostadoVerde += binding.etCoinsToPlay.text.toString().toInt()
@@ -261,7 +275,7 @@ class GameFragment : Fragment() {
                 apuestas?.add(
                     Apuesta(
                         0, "Negro", binding.etCoinsToPlay.text.toString().toInt(), money
-                    ,null ,null)
+                    ,null ,null, null)
                 )
                 importeApostadoNegro += binding.etCoinsToPlay.text.toString().toInt()
                 binding.apuestasNegro.text = importeApostadoNegro.toString() + "$"
@@ -335,7 +349,17 @@ class GameFragment : Fragment() {
                     if (binding.tvCardNumber.text.toString().toInt() % 2 == 0) {
                         println(apuesta.montoApostado * 2)
                         money += apuesta.montoApostado * 2
-                        binding.tvMoneyCount.text = money.toString() + "$"
+                        // Hacer funcion para obtener puntos de Firebase y actualizarlo en la interfaz al ganar
+
+                        lifecycleScope.launch(Dispatchers.IO){
+                            val premio = obtenerPremio()
+                            withContext(Dispatchers.Main){
+                                money += premio!!
+                                binding.tvMoneyCount.text = money.toString()  + "$"
+                            }
+
+                        }
+
                     }
                     apuestaGanada = true
                     Toast.makeText(context, getString(R.string.win_red), Toast.LENGTH_LONG).show()
@@ -343,7 +367,14 @@ class GameFragment : Fragment() {
                 if (apuesta.seleccion == "Verde" && esVerde == true) {
                     if (binding.tvCardNumber.text.toString().toInt() == 0) {
                         money += apuesta.montoApostado * 10
-                        binding.tvMoneyCount.text = money.toString() + "$"
+                        // Hacer funcion para obtener puntos de Firebase y actualizarlo en la interfaz al ganar
+                        lifecycleScope.launch(Dispatchers.IO){
+                            val premio = obtenerPremio()
+                            withContext(Dispatchers.Main){
+                                money += premio!!
+                                binding.tvMoneyCount.text = money.toString()  + "$"
+                            }
+                        }
                     }
                     apuestaGanada = true
                     Toast.makeText(context, getString(R.string.win_green), Toast.LENGTH_LONG).show()
@@ -352,7 +383,14 @@ class GameFragment : Fragment() {
                     if (binding.tvCardNumber.text.toString().toInt() % 2 != 0) {
                         println(apuesta.montoApostado * 2)
                         money += apuesta.montoApostado * 2
-                        binding.tvMoneyCount.text = money.toString() + "$"
+                        // Hacer funcion para obtener puntos de Firebase y actualizarlo en la interfaz al ganar
+                        lifecycleScope.launch(Dispatchers.IO){
+                            val premio = obtenerPremio()
+                            withContext(Dispatchers.Main){
+                                money += premio!!
+                                binding.tvMoneyCount.text = money.toString()  + "$"
+                            }
+                        }
                     }
                     apuestaGanada = true
                     Toast.makeText(context, getString(R.string.win_black), Toast.LENGTH_LONG).show()
@@ -364,12 +402,35 @@ class GameFragment : Fragment() {
                 if (apuestaGanada) {
                     insertLatLonUser(apuesta, true) { apuestaConLatLon ->
                         lifecycleScope.launch(Dispatchers.IO) {
+                            apuestaConLatLon.victoria = true
                             app.apuestaDao().insert(apuestaConLatLon)
+
+                            database = FirebaseDatabase.getInstance().getReference("/")
+
+                            val instanciaFirebase = FirebaseAuth.getInstance()
+                            if(instanciaFirebase.currentUser != null){
+
+                                val email = instanciaFirebase.currentUser!!.email
+                                val id = instanciaFirebase.currentUser!!.uid
+                                val premio = obtenerPremio()
+                                val dineroConPremioActual = premio?.plus(app.apuestaDao().obtenerDineroDisponible())
+
+                                app.apuestaDao().insert(Apuesta(0, "PREMIO", premio!!, dineroConPremioActual!!, null, null, null))
+                                val jugador = JugadorModel(email!!,app.apuestaDao().obtenerApuestasGanadas(),app.apuestaDao().obtenerDineroDisponible())
+                                database.child("jugadores").child(id).setValue(jugador)
+                                //database.child("jugadores").child(id).child("email").child("apuestas").setValue(app.apuestaDao().getAll())//
+                                database.child("premio").setValue(0)
+                               // database.child("usuarios").child("$email").setValue(apuestaGanada)
+
+                            }
+
                         }
                     }
                 } else {
                     lifecycleScope.launch(Dispatchers.IO) {
+                        apuesta.victoria = false
                         app.apuestaDao().insert(apuesta)
+                        actualizarPremio(apuesta.montoApostado)
                     }
                 }
 
@@ -378,6 +439,9 @@ class GameFragment : Fragment() {
             if (apuestaGanada) {
                 addEventToCalendar()
                 saveScreenshot(takeScreenshot(requireView()), requireContext())
+                lifecycleScope.launch(Dispatchers.IO) {
+
+                }
             }
 
             apuestas!!.clear()
@@ -399,13 +463,12 @@ class GameFragment : Fragment() {
 
         binding.addMoreCoins.setOnClickListener() {
             lifecycleScope.launch(Dispatchers.IO) {
-                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100, null, null))
+                app.apuestaDao().insert(Apuesta(0, "Reset", 0, 100, null, null, null))
             }
             money = 100
             binding.tvMoneyCount.text = money.toString() + "$"
             binding.addMoreCoins.setVisibility(View.INVISIBLE)
         }
-
 
         // Funcionamiento del boton de musica de fondo en pulsacion larga.
         binding.btnSound.setOnLongClickListener {
@@ -444,6 +507,58 @@ class GameFragment : Fragment() {
         return binding.root
     }
 
+    private suspend fun obtenerPremio(): Int? {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://androides-94b4a-default-rtdb.europe-west1.firebasedatabase.app/") // Reemplaza "tu_firebase_project_url" con la URL de tu proyecto Firebase
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service = retrofit.create(FirebaseApiService::class.java)
+
+        val response = service.getPremio()
+
+        if (response.isSuccessful) {
+            val valor = response.body()
+            Log.e("ESTE ES MI PREMIO" , valor.toString())
+            return valor
+        } else {
+            // La solicitud no fue exitosa, maneja el error aquí
+            Log.e("ESTE ES MI PREMIO" , "error")
+        }
+        return 0
+    }
+
+    private suspend fun actualizarPremio(montoApostado: Int) {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://androides-94b4a-default-rtdb.europe-west1.firebasedatabase.app/") // Reemplaza "tu_firebase_project_url" con la URL de tu proyecto Firebase
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service = retrofit.create(FirebaseApiService::class.java)
+
+        val response = service.getPremio()
+
+        if (response.isSuccessful) {
+            var valor = response.body()
+            valor = valor?.plus(montoApostado)
+
+            database = FirebaseDatabase.getInstance().getReference("/")
+
+            val instanciaFirebase = FirebaseAuth.getInstance()
+            if(instanciaFirebase.currentUser != null){
+
+                database.child("premio").setValue(valor)
+
+            }
+
+            Log.e("ESTE ES MI PREMIO" , valor.toString())
+        } else {
+            // La solicitud no fue exitosa, maneja el error aquí
+            Log.e("ESTE ES MI PREMIO" , "error")
+        }
+
+    }
+
     private fun insertLatLonUser(
         apuesta: Apuesta, apuestaGanada: Boolean, callback: (Apuesta) -> Unit
     ) {
@@ -468,7 +583,6 @@ class GameFragment : Fragment() {
             callback(apuestaConLatLon)
         }
     }
-
 
     companion object {
         /**
